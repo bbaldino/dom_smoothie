@@ -315,7 +315,7 @@ fn fix_lazy_images(sel: &Selection) {
             let val = attr.value.to_ascii_lowercase();
             if is_img_attr_to_srcset(&val) {
                 copy_to = Some("srcset");
-            } else if is_img_attr_to_src(&val) {
+            } else if is_img_attr_to_src(&val) && looks_like_url(&attr.value) {
                 copy_to = Some("src");
             }
 
@@ -339,6 +339,18 @@ fn fix_lazy_images(sel: &Selection) {
             }
         }
     }
+}
+
+/// Check if a value looks like a URL rather than a bare filename.
+/// Bare filenames like "Foo.png" should not overwrite an existing src attribute
+/// that contains a full URL.
+fn looks_like_url(val: &str) -> bool {
+    let trimmed = val.trim();
+    trimmed.starts_with("http://")
+        || trimmed.starts_with("https://")
+        || trimmed.starts_with("//")
+        || trimmed.starts_with("/")
+        || trimmed.starts_with("data:")
 }
 
 fn clean_headers(sel: &Selection, flags: &FlagSet<GrabFlags>) {
