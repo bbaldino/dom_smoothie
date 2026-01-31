@@ -16,6 +16,13 @@ fn clean(root_sel: &Selection) {
         // Allow youtube and vimeo videos through as people usually want to see those.
 
         if !node_name_in(node, &EMBED_ELEMENTS) {
+            // Before removing, rescue any <img> descendants by moving them
+            // to just before this node. This handles sites that wrap images
+            // in non-content elements like <button>.
+            let node_sel = Selection::from(node.clone());
+            for img_node in node_sel.select_matcher(&MATCHER_IMG).nodes().iter() {
+                node.insert_before(img_node);
+            }
             node.remove_from_parent();
             continue;
         }
